@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, result_badge %}
+{% block title %}{{ qualification.credential_id }} &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <p class="font-mono text-sm text-slate-500">{{ qualification.credential_id }}</p>
+    <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{{ qualification.title }}</h1>
+    <div class="mt-2 flex items-center gap-3">
+      {{ status_badge(qualification.effective_status) }}
+      <span class="text-sm text-slate-600">{{ qualification.qualification_type }}</span>
+    </div>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <button type="button" class="btn-secondary" data-copy="{{ qualification.credential_id }}">Copy ID</button>
+    {% if current_user.is_issuer and qualification.status != QualificationStatus.REVOKED %}
+      <a class="btn-secondary" href="{{ url_for('qualifications.edit', qualification_id=qualification.id) }}">Edit</a>
+      <button type="button" class="btn-danger" data-toggle-target="revoke-panel" aria-expanded="false" aria-controls="revoke-panel">Revoke</button>
+    {% endif %}
+    {% if current_user.is_admin and qualification.status == QualificationStatus.REVOKED %}
+      <button type="button" class="btn-secondary" data-toggle-target="reinstate-panel" aria-expanded="false" aria-controls="reinstate-panel">Reinstate</button>
+    {% endif %}
+  </div>
+</div>
+
+{% if qualification.status == QualificationStatus.REVOKED %}
+  <div class="flash flash-error mb-6">
+    <strong>Revoked.</strong> {{ qualification.revocation_reason }}
+  </div>
+{% elif qualification.is_expired() %}
+  <div class="flash flash-warning mb-6">
+    <strong>Expired.</strong> This credential passed its expiry date on {{ qualification.expiry_date|date }}.
+  </div>
+{% endif %}
+
+{% if current_user.is_issuer %}
+<div id="revoke-panel" class="card mb-6 p-5" hidden>
+  <h2 class="mb-3 font-semibold text-slate-900">Revoke this qualification</h2>
+  <p class="mb-3 text-sm text-slate-600">
+    Revocation is recorded in the audit trail and immediately changes the result
+    returned to verifiers. A reason is required.
+  </p>
+  <form method="post" action="{{ url_for('qualifications.revoke', qualification_id=qualification.id) }}"
+        data-confirm="Revoke {{ qualification.credential_id }}? Verifiers will immediately see REVOKED.">
+    {{ revoke_form.hidden_tag() }}
+    {{ revoke_form.reason(class="form-input", rows="3", placeholder="e.g. Awarded in error following a records audit") }}
+    {% for error in revoke_form.reason.errors %}<p class="mt-1 text-xs text-rose-600">{{ error }}</p>{% endfor %}
+    <div class="mt-3">{{ revoke_form.submit(class="btn-danger") }}</div>
+  </form>
+</div>
+{% endif %}
+
+{% if current_user.is_admin and qualification.status == QualificationStatus.REVOKED %}
+<div id="reinstate-panel" class="card mb-6 p-5" hidden>
+  <h2 class="mb-3 font-semibold text-slate-900">Reinstate this qualification</h2>
+  <form method="post" action="{{ url_for('qualifications.reinstate', qualification_id=qualification.id) }}">
+    {{ reinstate_form.hidden_tag() }}
+    {{ reinstate_form.reason(class="form-input", rows="3", placeholder="Reason for reinstatement") }}
+    <div class="mt-3">{{ reinstate_form.submit(class="btn-primary") }}</div>
+  </form>
+</div>
+{% endif %}
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <section class="card p-6 lg:col-span-2" aria-labelledby="record-heading">
+    <h2 id="record-heading" class="mb-4 font-semibold text-slate-900">Credential record</h2>
+    <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Holder</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.holder_name }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Holder email</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.holder_email or '-' }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Institution</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.institution.name }} ({{ qualification.institution.code }})</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Type</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.qualification_type }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Award date</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.award_date|date }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Expiry date</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.expiry_date|date if qualification.expiry_date else 'Does not expire' }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Issued by</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.issued_by.full_name }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Registered</dt><dd class="mt-1 text-sm text-slate-900">{{ qualification.created_at|datetime }}</dd></div>
+    </dl>
+  </section>
+
+  {% if assessment %}
+  <section class="card p-6" aria-labelledby="review-heading">
+    <h2 id="review-heading" class="font-semibold text-slate-900">Review assistant</h2>
+    <p class="mt-1 text-xs text-slate-500">Rule-based screening; advisory only.</p>
+    {% set tone = {'success': 'bg-emerald-100 text-emerald-800', 'warning': 'bg-amber-100 text-amber-800', 'danger': 'bg-rose-100 text-rose-800'} %}
+    <div class="mt-4 flex items-center gap-3">
+      <span class="badge {{ tone[assessment.tone] }}">{{ assessment.level|upper }} RISK</span>
+      <span class="text-sm text-slate-600">Score {{ assessment.score }}/100</span>
+    </div>
+    {% if assessment.signals %}
+      <ul class="mt-4 space-y-3">
+        {% for signal in assessment.signals %}
+          <li class="border-l-2 border-slate-300 pl-3">
+            <p class="text-sm text-slate-800">{{ signal.message }}</p>
+            <p class="mt-0.5 font-mono text-xs text-slate-400">{{ signal.code }} (+{{ signal.weight }})</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-4 text-sm text-slate-600">No review signals were triggered for this record.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+
+{% if qualification.verifications %}
+<section class="card mt-6" aria-labelledby="verifications-heading">
+  <h2 id="verifications-heading" class="border-b border-slate-200 px-5 py-4 font-semibold text-slate-900">
+    Verification history for this credential
+  </h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th scope="col">Result</th><th scope="col">Performed by</th><th scope="col">When</th></tr></thead>
+      <tbody>
+        {% for v in qualification.verifications|sort(attribute='created_at', reverse=true) %}
+          <tr>
+            <td>{{ result_badge(v.result) }}</td>
+            <td>{{ v.performed_by.username if v.performed_by else 'anonymous' }}</td>
+            <td class="text-slate-500">{{ v.created_at|datetime }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<div class="mt-6">
+  <a class="text-sm text-slate-600 hover:text-slate-900" href="{{ url_for('qualifications.list_qualifications') }}">&larr; Back to the register</a>
+</div>
+{% endblock %}

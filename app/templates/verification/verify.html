@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Verify a credential &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <div class="mb-6 text-center">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Verify a credential</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      Enter the credential reference exactly as it appears on the certificate.
+      Every attempt is recorded in the audit trail.
+    </p>
+  </div>
+
+  <form method="post" class="card p-6" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.credential_id, placeholder="QVS-2024-A1B2C3", autofocus=true) }}
+    {{ form.submit(class="btn-primary w-full") }}
+  </form>
+
+  {% if outcome %}
+    {% set tone = {'success': ['bg-emerald-50','border-emerald-500','text-emerald-900'],
+                   'warning': ['bg-amber-50','border-amber-500','text-amber-900'],
+                   'danger':  ['bg-rose-50','border-rose-500','text-rose-900']} %}
+    {% set colours = tone[outcome.css_tone] %}
+    <section class="mt-6 rounded-lg border-l-4 {{ colours[0] }} {{ colours[1] }} p-6" role="status" aria-live="polite">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl" aria-hidden="true">
+          {% if outcome.result.value == 'VALID' %}&#10004;{% elif outcome.result.value == 'EXPIRED' %}&#9888;{% else %}&#10008;{% endif %}
+        </span>
+        <div>
+          <h2 class="text-xl font-semibold {{ colours[2] }}">{{ outcome.result.value }}</h2>
+          <p class="mt-1 text-sm {{ colours[2] }}">{{ outcome.message }}</p>
+        </div>
+      </div>
+
+      <dl class="mt-5 grid gap-3 border-t border-white/60 pt-4 text-sm sm:grid-cols-2">
+        <div>
+          <dt class="text-xs uppercase tracking-wide opacity-70">Credential checked</dt>
+          <dd class="mt-0.5 font-mono">{{ outcome.credential_id }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide opacity-70">Verification reference</dt>
+          <dd class="mt-0.5 font-mono text-xs">{{ outcome.reference }}</dd>
+        </div>
+        {% if outcome.qualification %}
+          {# Only released for a credential that was actually found. Nothing
+             beyond what a certificate itself already states is disclosed. #}
+          <div>
+            <dt class="text-xs uppercase tracking-wide opacity-70">Holder</dt>
+            <dd class="mt-0.5">{{ outcome.qualification.holder_name }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide opacity-70">Qualification</dt>
+            <dd class="mt-0.5">{{ outcome.qualification.title }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide opacity-70">Institution</dt>
+            <dd class="mt-0.5">{{ outcome.qualification.institution.name }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide opacity-70">Awarded</dt>
+            <dd class="mt-0.5">{{ outcome.qualification.award_date|date }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        <a class="btn-secondary" href="{{ url_for('verification.result', reference=outcome.reference) }}">Open receipt</a>
+        {% if outcome.qualification and current_user.is_issuer %}
+          <a class="btn-secondary" href="{{ url_for('qualifications.detail', qualification_id=outcome.qualification.id) }}">Full record</a>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

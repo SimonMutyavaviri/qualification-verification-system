@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, checkbox %}
+{% block title %}Edit {{ qualification.credential_id }} &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl">
+  <div class="mb-6">
+    <p class="font-mono text-sm text-slate-500">{{ qualification.credential_id }}</p>
+    <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Edit qualification</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      The credential ID, award date, institution and issuer are immutable:
+      changing them would alter the meaning of a credential that third parties
+      may already have verified.
+    </p>
+  </div>
+
+  <form method="post" class="card p-6" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.title) }}
+    {{ field(form.qualification_type) }}
+    {{ field(form.holder_name) }}
+    {{ field(form.holder_email) }}
+    {{ field(form.expiry_date) }}
+    {{ checkbox(form.clear_expiry) }}
+    <div class="flex gap-2">
+      {{ form.submit(class="btn-primary") }}
+      <a class="btn-secondary" href="{{ url_for('qualifications.detail', qualification_id=qualification.id) }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

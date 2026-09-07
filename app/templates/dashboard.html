@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% from "_macros.html" import result_badge, status_badge, empty_state %}
+{% block title %}Dashboard &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      Signed in as {{ current_user.full_name }} &middot; {{ current_user.role.label }}
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <a class="btn-primary" href="{{ url_for('verification.verify') }}">Verify a credential</a>
+    {% if current_user.is_issuer %}
+      <a class="btn-secondary" href="{{ url_for('qualifications.register') }}">Register qualification</a>
+    {% endif %}
+  </div>
+</div>
+
+{# Live monitoring panel -- refreshed from /metrics every 15 seconds. #}
+<section id="metrics-panel" class="mb-8" aria-label="System metrics">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="card p-5">
+      <p class="text-sm font-medium text-slate-500">Qualifications</p>
+      <p id="metric-qualifications" class="mt-1 text-3xl font-semibold tabular-nums text-slate-900">{{ qualification_stats.total }}</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-sm font-medium text-slate-500">Active</p>
+      <p id="metric-active" class="mt-1 text-3xl font-semibold tabular-nums text-emerald-700">{{ qualification_stats.active }}</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-sm font-medium text-slate-500">Verifications</p>
+      <p id="metric-verifications" class="mt-1 text-3xl font-semibold tabular-nums text-slate-900">{{ verification_stats.total }}</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-sm font-medium text-slate-500">Valid results</p>
+      <p id="metric-valid" class="mt-1 text-3xl font-semibold tabular-nums text-emerald-700">{{ verification_stats.valid }}</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-sm font-medium text-slate-500">Revoked credentials</p>
+      <p class="mt-1 text-3xl font-semibold tabular-nums text-rose-700">{{ qualification_stats.revoked }}</p>
+    </div>
+  </div>
+  <p class="mt-2 text-xs text-slate-500">
+    Live counters &middot; last updated <span id="metrics-updated">just now</span>
+  </p>
+</section>
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <section class="card" aria-labelledby="recent-verifications-heading">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <h2 id="recent-verifications-heading" class="font-semibold text-slate-900">Recent verifications</h2>
+      <a class="text-sm text-slate-600 hover:text-slate-900" href="{{ url_for('verification.history') }}">View all</a>
+    </div>
+    {% if recent_verifications %}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th scope="col">Credential</th><th scope="col">Result</th><th scope="col">When</th></tr>
+          </thead>
+          <tbody>
+            {% for record in recent_verifications %}
+              <tr>
+                <td class="font-mono text-xs">{{ record.credential_id }}</td>
+                <td>{{ result_badge(record.result) }}</td>
+                <td class="text-slate-500">{{ record.created_at|datetime }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-5">{{ empty_state("No verifications have been performed yet.") }}</div>
+    {% endif %}
+  </section>
+
+  {% if current_user.is_issuer %}
+  <section class="card" aria-labelledby="recent-qualifications-heading">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <h2 id="recent-qualifications-heading" class="font-semibold text-slate-900">Recently registered</h2>
+      <a class="text-sm text-slate-600 hover:text-slate-900" href="{{ url_for('qualifications.list_qualifications') }}">View all</a>
+    </div>
+    {% if recent_qualifications %}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th scope="col">Credential</th><th scope="col">Holder</th><th scope="col">Status</th></tr>
+          </thead>
+          <tbody>
+            {% for q in recent_qualifications %}
+              <tr>
+                <td class="font-mono text-xs">
+                  <a class="text-slate-900 underline" href="{{ url_for('qualifications.detail', qualification_id=q.id) }}">{{ q.credential_id }}</a>
+                </td>
+                <td>{{ q.holder_name }}</td>
+                <td>{{ status_badge(q.effective_status) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-5">{{ empty_state("No qualifications registered yet.") }}</div>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if current_user.is_admin %}
+  <section class="card lg:col-span-2" aria-labelledby="audit-heading">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <h2 id="audit-heading" class="font-semibold text-slate-900">Recent system activity</h2>
+      <a class="text-sm text-slate-600 hover:text-slate-900" href="{{ url_for('admin.audit') }}">Full audit trail</a>
+    </div>
+    <div class="grid gap-4 border-b border-slate-200 px-5 py-4 sm:grid-cols-3">
+      <p class="text-sm text-slate-600">Users: <span class="font-semibold text-slate-900">{{ user_count }}</span></p>
+      <p class="text-sm text-slate-600">Institutions: <span class="font-semibold text-slate-900">{{ institution_count }}</span></p>
+      <p class="text-sm text-slate-600">Audit entries: <span id="metric-audit" class="font-semibold text-slate-900">{{ audit_count }}</span></p>
+    </div>
+    {% if recent_audit %}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th scope="col">Action</th><th scope="col">Actor</th><th scope="col">Detail</th><th scope="col">When</th></tr>
+          </thead>
+          <tbody>
+            {% for entry in recent_audit %}
+              <tr>
+                <td class="font-mono text-xs">{{ entry.action.value }}</td>
+                <td>{{ entry.actor_label }}</td>
+                <td class="text-slate-600">{{ entry.detail or '-' }}</td>
+                <td class="text-slate-500 whitespace-nowrap">{{ entry.created_at|datetime }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-5">{{ empty_state("No audit activity recorded yet.") }}</div>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

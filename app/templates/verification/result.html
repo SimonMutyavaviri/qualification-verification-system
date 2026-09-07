@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_macros.html" import result_badge %}
+{% block title %}Verification receipt &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Verification receipt</h1>
+  <p class="mt-1 text-sm text-slate-600">
+    A permanent record of one verification attempt. This page can be shared as
+    proof that the check was carried out.
+  </p>
+
+  <section class="card mt-6 p-6">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div>
+        <p class="text-xs uppercase tracking-wide text-slate-500">Result</p>
+        <div class="mt-1">{{ result_badge(record.result) }}</div>
+      </div>
+      <p class="text-right text-sm text-slate-500">{{ record.created_at|datetime }}</p>
+    </div>
+
+    <dl class="mt-4 grid gap-4 sm:grid-cols-2 text-sm">
+      <div>
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Credential checked</dt>
+        <dd class="mt-0.5 font-mono">{{ record.credential_id }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Reference</dt>
+        <dd class="mt-0.5 font-mono text-xs">{{ record.reference }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Performed by</dt>
+        <dd class="mt-0.5">{{ record.performed_by.full_name if record.performed_by else 'Anonymous' }}</dd>
+      </div>
+      {% if record.notes %}
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Notes</dt>
+          <dd class="mt-0.5">{{ record.notes }}</dd>
+        </div>
+      {% endif %}
+      {% if record.qualification %}
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Holder</dt>
+          <dd class="mt-0.5">{{ record.qualification.holder_name }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Qualification</dt>
+          <dd class="mt-0.5">{{ record.qualification.title }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Institution</dt>
+          <dd class="mt-0.5">{{ record.qualification.institution.name }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+  </section>
+
+  <div class="mt-6 flex gap-2">
+    <a class="btn-primary" href="{{ url_for('verification.verify') }}">Verify another</a>
+    <a class="btn-secondary" href="{{ url_for('verification.history') }}">Verification history</a>
+  </div>
+</div>
+{% endblock %}

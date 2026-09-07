@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, empty_state %}
+{% block title %}Institutions &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Institutions</h1>
+  <p class="mt-1 text-sm text-slate-600">
+    Awarding bodies authorised to issue qualifications. Deactivating an
+    institution stops new registrations against it without affecting
+    credentials it has already issued.
+  </p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <section class="card p-6" aria-labelledby="create-institution-heading">
+    <h2 id="create-institution-heading" class="mb-4 font-semibold text-slate-900">Add an institution</h2>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.name, placeholder="Midlands State University") }}
+      {{ field(form.code, placeholder="MSU") }}
+      {{ field(form.country, placeholder="Zimbabwe") }}
+      {{ field(form.contact_email, placeholder="registry@example.ac.zw") }}
+      {{ form.submit(class="btn-primary w-full") }}
+    </form>
+  </section>
+
+  <section class="card lg:col-span-2" aria-labelledby="institution-list-heading">
+    <h2 id="institution-list-heading" class="border-b border-slate-200 px-5 py-4 font-semibold text-slate-900">Registered institutions</h2>
+    {% if listing.items %}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th scope="col">Code</th><th scope="col">Name</th><th scope="col">Country</th>
+                <th scope="col">Credentials</th><th scope="col">Status</th><th scope="col">Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for institution in listing.items %}
+              <tr>
+                <td class="font-mono text-xs">{{ institution.code }}</td>
+                <td class="font-medium text-slate-900">
+                  {{ institution.name }}
+                  {% if institution.contact_email %}
+                    <span class="block text-xs text-slate-500">{{ institution.contact_email }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-slate-600">{{ institution.country or '-' }}</td>
+                <td class="tabular-nums">{{ institution.qualifications|length }}</td>
+                <td>
+                  {% if institution.is_active %}
+                    <span class="badge bg-emerald-100 text-emerald-800">Active</span>
+                  {% else %}
+                    <span class="badge bg-slate-200 text-slate-700">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <form method="post" action="{{ url_for('admin.institution_status', institution_id=institution.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="{{ 'deactivate' if institution.is_active else 'activate' }}">
+                    <button type="submit" class="btn-secondary px-2 py-1 text-xs">
+                      {{ 'Deactivate' if institution.is_active else 'Activate' }}
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav class="flex items-center justify-between border-t border-slate-200 px-5 py-4 text-sm" aria-label="Pagination">
+        <p class="text-slate-600">Page {{ listing.page }} of {{ listing.pages or 1 }} &middot; {{ listing.total }} institution(s)</p>
+        <div class="flex gap-2">
+          {% if listing.has_prev %}<a class="btn-secondary" href="{{ url_for('admin.institutions', page=listing.prev_num) }}">Previous</a>{% endif %}
+          {% if listing.has_next %}<a class="btn-secondary" href="{{ url_for('admin.institutions', page=listing.next_num) }}">Next</a>{% endif %}
+        </div>
+      </nav>
+    {% else %}
+      <div class="p-5">{{ empty_state("No institutions registered yet.") }}</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

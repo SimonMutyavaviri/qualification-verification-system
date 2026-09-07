@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, empty_state %}
+{% block title %}Qualifications &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Qualification register</h1>
+    <p class="mt-1 text-sm text-slate-600">Search and filter registered credentials.</p>
+  </div>
+  {% if current_user.is_issuer %}
+    <a class="btn-primary" href="{{ url_for('qualifications.register') }}">Register qualification</a>
+  {% endif %}
+</div>
+
+<form method="get" class="card mb-6 p-5" role="search">
+  <div class="grid gap-4 md:grid-cols-4">
+    <div>
+      {{ form.q.label(class="block text-sm font-medium text-slate-700 mb-1") }}
+      {{ form.q(class="form-input", placeholder="Credential ID, holder or title") }}
+    </div>
+    <div>
+      {{ form.status.label(class="block text-sm font-medium text-slate-700 mb-1") }}
+      {{ form.status(class="form-input") }}
+    </div>
+    <div>
+      {{ form.qualification_type.label(class="block text-sm font-medium text-slate-700 mb-1") }}
+      {{ form.qualification_type(class="form-input") }}
+    </div>
+    <div>
+      {{ form.institution_id.label(class="block text-sm font-medium text-slate-700 mb-1") }}
+      {{ form.institution_id(class="form-input") }}
+    </div>
+  </div>
+  <div class="mt-4 flex gap-2">
+    <button type="submit" class="btn-primary">Search</button>
+    <a class="btn-secondary" href="{{ url_for('qualifications.list_qualifications') }}">Clear filters</a>
+  </div>
+</form>
+
+{% if results.items %}
+  <div class="card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Credential ID</th>
+            <th scope="col">Title</th>
+            <th scope="col">Holder</th>
+            <th scope="col">Institution</th>
+            <th scope="col">Awarded</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in results.items %}
+            <tr>
+              <td class="font-mono text-xs">
+                <a class="text-slate-900 underline" href="{{ url_for('qualifications.detail', qualification_id=q.id) }}">{{ q.credential_id }}</a>
+              </td>
+              <td class="font-medium text-slate-900">{{ q.title }}</td>
+              <td>{{ q.holder_name }}</td>
+              <td class="text-slate-600">{{ q.institution.name }}</td>
+              <td class="whitespace-nowrap text-slate-600">{{ q.award_date|date }}</td>
+              <td>{{ status_badge(q.effective_status) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {# Pagination links carry the active filters so paging does not reset them. #}
+  <nav class="mt-6 flex items-center justify-between border-t border-slate-200 pt-4 text-sm" aria-label="Pagination">
+    <p class="text-slate-600">Page {{ results.page }} of {{ results.pages or 1 }} &middot; {{ results.total }} record(s)</p>
+    <div class="flex gap-2">
+      {% if results.has_prev %}<a class="btn-secondary" href="{{ url_for('qualifications.list_qualifications', page=results.prev_num, q=form.q.data, status=form.status.data, qualification_type=form.qualification_type.data, institution_id=form.institution_id.data) }}">Previous</a>{% endif %}
+      {% if results.has_next %}<a class="btn-secondary" href="{{ url_for('qualifications.list_qualifications', page=results.next_num, q=form.q.data, status=form.status.data, qualification_type=form.qualification_type.data, institution_id=form.institution_id.data) }}">Next</a>{% endif %}
+    </div>
+  </nav>
+{% else %}
+  {{ empty_state("No qualifications match your search.") }}
+{% endif %}
+{% endblock %}

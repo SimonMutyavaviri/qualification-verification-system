@@ -1,0 +1,16 @@
+# Normalise line endings so a mixed Windows/macOS/Linux team does not produce
+# whole-file diffs that hide the real change.
+* text=auto eol=lf
+
+# Shell scripts must keep LF endings or they will not execute in the container.
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+
+# Binary files: never convert.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.docx binary
+*.pptx binary
+*.xlsx binary
+*.ico binary

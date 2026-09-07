@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Register qualification &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl">
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Register a qualification</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      All fields are validated before the credential is written to the register.
+      Leaving the credential ID blank generates a unique reference automatically.
+    </p>
+  </div>
+
+  <form method="post" class="card p-6" novalidate>
+    {{ form.hidden_tag() }}
+
+    <fieldset class="mb-6">
+      <legend class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Credential</legend>
+      {{ field(form.credential_id, placeholder="QVS-2024-A1B2C3") }}
+      {{ field(form.title, placeholder="BSc Honours in Information Systems") }}
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>{{ field(form.qualification_type) }}</div>
+        <div>{{ field(form.institution_id) }}</div>
+      </div>
+    </fieldset>
+
+    <fieldset class="mb-6">
+      <legend class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Holder</legend>
+      {{ field(form.holder_name, placeholder="Full name as it appears on the certificate") }}
+      {{ field(form.holder_email, placeholder="holder@example.com") }}
+    </fieldset>
+
+    <fieldset class="mb-6">
+      <legend class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Dates</legend>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>{{ field(form.award_date) }}</div>
+        <div>{{ field(form.expiry_date) }}</div>
+      </div>
+      <p class="text-xs text-slate-500">Leave the expiry date blank for a credential that does not expire.</p>
+    </fieldset>
+
+    <div class="flex gap-2">
+      {{ form.submit(class="btn-primary") }}
+      <a class="btn-secondary" href="{{ url_for('qualifications.list_qualifications') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import result_badge, empty_state %}
+{% block title %}Verification history &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Verification history</h1>
+  <p class="mt-1 text-sm text-slate-600">
+    {% if current_user.is_issuer %}
+      Every verification attempt recorded by the system.
+    {% else %}
+      Verification attempts you have performed.
+    {% endif %}
+  </p>
+</div>
+
+<form method="get" class="card mb-6 p-5" role="search">
+  <div class="grid gap-4 sm:grid-cols-3">
+    <div>
+      {{ form.credential_id.label(class="block text-sm font-medium text-slate-700 mb-1") }}
+      {{ form.credential_id(class="form-input", placeholder="QVS-2024-...") }}
+    </div>
+    <div>
+      {{ form.result.label(class="block text-sm font-medium text-slate-700 mb-1") }}
+      {{ form.result(class="form-input") }}
+    </div>
+    <div class="flex items-end gap-2">
+      <button type="submit" class="btn-primary">Filter</button>
+      <a class="btn-secondary" href="{{ url_for('verification.history') }}">Clear</a>
+    </div>
+  </div>
+</form>
+
+{% if records.items %}
+  <div class="card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">When</th>
+            <th scope="col">Credential</th>
+            <th scope="col">Result</th>
+            <th scope="col">Performed by</th>
+            <th scope="col">Source IP</th>
+            <th scope="col">Receipt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records.items %}
+            <tr>
+              <td class="whitespace-nowrap text-slate-600">{{ record.created_at|datetime }}</td>
+              <td class="font-mono text-xs">{{ record.credential_id }}</td>
+              <td>{{ result_badge(record.result) }}</td>
+              <td>{{ record.performed_by.username if record.performed_by else 'anonymous' }}</td>
+              <td class="font-mono text-xs text-slate-500">{{ record.ip_address or '-' }}</td>
+              <td>
+                <a class="text-slate-900 underline" href="{{ url_for('verification.result', reference=record.reference) }}">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <nav class="mt-6 flex items-center justify-between border-t border-slate-200 pt-4 text-sm" aria-label="Pagination">
+    <p class="text-slate-600">Page {{ records.page }} of {{ records.pages or 1 }} &middot; {{ records.total }} record(s)</p>
+    <div class="flex gap-2">
+      {% if records.has_prev %}<a class="btn-secondary" href="{{ url_for('verification.history', page=records.prev_num, credential_id=form.credential_id.data, result=form.result.data) }}">Previous</a>{% endif %}
+      {% if records.has_next %}<a class="btn-secondary" href="{{ url_for('verification.history', page=records.next_num, credential_id=form.credential_id.data, result=form.result.data) }}">Next</a>{% endif %}
+    </div>
+  </nav>
+{% else %}
+  {{ empty_state("No verification records match your filters.") }}
+{% endif %}
+{% endblock %}

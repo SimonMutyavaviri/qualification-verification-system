@@ -1,0 +1,82 @@
+[project]
+name = "qualification-verification-system"
+version = "1.0.0"
+description = "A DevOps-enabled qualification verification system (MIM736 practical assignment)"
+requires-python = ">=3.11"
+
+# ---------------------------------------------------------------------------
+# Ruff: linting. Rules are chosen to catch real defects (bugbear, comprehension
+# misuse, unused imports) rather than to maximise the rule count.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "migrations/versions", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "UP", "SIM", "ARG", "RET", "N"]
+ignore = [
+    "E501",   # line length is enforced by Black, not Ruff
+    "B008",   # Flask-Limiter idiomatically takes callables in decorators
+    "N818",   # domain exception names read better without an Error suffix rule
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately shadow fixtures and use assert-heavy, argument-heavy style.
+"tests/*" = ["ARG001", "ARG002", "S101"]
+"app/models/*" = ["ARG001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# ---------------------------------------------------------------------------
+# Black: formatting
+# ---------------------------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+exclude = '''/(\.venv|migrations/versions|build|dist)/'''
+
+# ---------------------------------------------------------------------------
+# Pytest and coverage. The quality gate lives in --cov-fail-under: CI fails if
+# meaningful coverage drops below the agreed threshold.
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = [
+    "--strict-markers",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html:reports/coverage",
+    "--cov-report=xml:reports/coverage.xml",
+    "--cov-fail-under=85",
+]
+markers = [
+    "unit: fast, isolated tests of a single unit of business logic",
+    "integration: tests that exercise a full request/response workflow",
+    "security: tests asserting an access-control or hardening property",
+]
+filterwarnings = ["ignore::DeprecationWarning:flask_limiter.*"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/cli.py",          # exercised by the seed command, not by unit tests
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+# ---------------------------------------------------------------------------
+# Bandit: security static analysis
+# ---------------------------------------------------------------------------
+[tool.bandit]
+exclude_dirs = [".venv", "tests", "migrations", "build", "dist"]
+skips = ["B101"]  # assert_used: only relevant in tests, which are excluded

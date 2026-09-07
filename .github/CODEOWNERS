@@ -1,0 +1,31 @@
+# Every pull request needs a review. Ownership is split along the same lines
+# as the team's areas of responsibility, so the person who knows an area is
+# automatically asked to review changes to it.
+#
+# Replace the placeholder handles with the team's real GitHub usernames.
+
+# Default owner for anything not matched below.
+*                       @team-lead
+
+# Student 1 - authentication, user management and backend hardening
+/app/auth/              @student-one
+/app/services/user_service.py  @student-one
+/app/utils/security.py  @student-one
+
+# Student 2 - qualification management
+/app/services/qualification_service.py   @student-two
+/app/routes/qualification_routes.py      @student-two
+/app/templates/qualifications/           @student-two
+
+# Student 3 - verification and audit
+/app/services/verification_service.py    @student-three
+/app/services/audit_service.py           @student-three
+/app/routes/verification_routes.py       @student-three
+/app/templates/verification/             @student-three
+
+# Student 4 - DevOps, QA and deployment
+/.github/               @student-four
+/Dockerfile             @student-four
+/docker-compose.yml     @student-four
+/fly.toml               @student-four
+/pyproject.toml         @student-four

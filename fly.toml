@@ -1,0 +1,57 @@
+# Fly.io configuration for the Qualification Verification System.
+#
+# Secrets (SECRET_KEY, DATABASE_URL) are NOT set here. They are stored with
+# `flyctl secrets set`, which keeps them out of the repository entirely.
+
+app = "qvs-mim736"
+primary_region = "jnb"          # Johannesburg: closest region to the users
+kill_signal = "SIGINT"
+kill_timeout = 30
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  FLASK_ENV = "production"
+  PORT = "8080"
+  DATA_DIR = "/data"
+  SESSION_COOKIE_SECURE = "true"
+  LOG_TO_FILE = "false"
+  ITEMS_PER_PAGE = "10"
+  RATELIMIT_ENABLED = "true"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # One machine always running so the first verification of the day is not
+  # slowed by a cold start.
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 60
+
+# Fly polls this endpoint; a machine failing it is not sent traffic, which is
+# what makes a broken release fail its deployment instead of serving errors.
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "15s"
+  method = "GET"
+  path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Persistent storage for the SQLite database. See docs/flyio-deployment.md for
+# the rationale and for the one-command switch to managed PostgreSQL.
+[mounts]
+  source = "qvs_data"
+  destination = "/data"

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Profile &middot; QVS{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Your profile</h1>
+
+  <section class="card mt-6 p-6">
+    <h2 class="mb-4 font-semibold text-slate-900">Account details</h2>
+    <dl class="grid gap-4 sm:grid-cols-2 text-sm">
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Full name</dt><dd class="mt-0.5">{{ current_user.full_name }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Username</dt><dd class="mt-0.5 font-mono">{{ current_user.username }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Email</dt><dd class="mt-0.5">{{ current_user.email }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Role</dt><dd class="mt-0.5">{{ current_user.role.label }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Institution</dt><dd class="mt-0.5">{{ current_user.institution.name if current_user.institution else '-' }}</dd></div>
+      <div><dt class="text-xs uppercase tracking-wide text-slate-500">Last sign-in</dt><dd class="mt-0.5">{{ current_user.last_login_at|datetime if current_user.last_login_at else 'This is your first session' }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="card mt-6 p-6">
+    <h2 class="mb-4 font-semibold text-slate-900">Change your password</h2>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.current_password) }}
+      {{ field(form.new_password) }}
+      <p class="mb-4 text-xs text-slate-500">
+        At least 12 characters, including an upper case letter, a lower case
+        letter and a digit.
+      </p>
+      {{ form.submit(class="btn-primary") }}
+    </form>
+  </section>
+</div>
+{% endblock %}
