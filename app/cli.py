@@ -377,8 +377,17 @@ def register_cli(app: Flask) -> None:
         db.session.commit()
 
         # -- verification history -----------------------------------------
+        # Seed only if this dataset's own history is absent. Checking the total
+        # count instead would skip the seeding on any system that had ever been
+        # used, which is exactly the case on a deployed demonstration instance.
         checks = 0
-        if Verification.query.count() == 0:
+        test_refs = {cid for cid, _user, _ago in VERIFICATIONS}
+        already = (
+            db.session.query(Verification.credential_id)
+            .filter(Verification.credential_id.in_(test_refs))
+            .first()
+        )
+        if already is None:
             for cid, username, _days_ago in VERIFICATIONS:
                 VerificationService.verify(credential_id=cid, actor=users[username])
                 checks += 1
