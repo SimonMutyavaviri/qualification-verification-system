@@ -48,3 +48,6 @@ Thumbs.db
 # Local credential notes (never committed)
 deployment-credentials.local.md
 *.local.md
+
+# Locally generated credentials, never committed
+.local/

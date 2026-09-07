@@ -237,3 +237,165 @@ def register_cli(app: Flask) -> None:
             )
         else:
             click.echo("  Accounts already existed; passwords unchanged.")
+
+    @app.cli.command("seed-testdata")
+    @click.option(
+        "--reset",
+        is_flag=True,
+        help="Delete existing qualifications and verifications first.",
+    )
+    def seed_testdata(reset: bool) -> None:
+        """Load the demonstration dataset: three universities and a varied register.
+
+        Safe to re-run. Existing records are left alone unless --reset is given.
+        Passwords come from the environment, or are generated and shown once.
+        """
+        import os
+
+        from app.models.audit import AuditLog
+        from app.models.verification import Verification
+        from app.repositories.qualification_repository import QualificationRepository
+        from app.services.verification_service import VerificationService
+        from app.testdata import (
+            BUSY_HOLDER,
+            BUSY_HOLDER_CREDENTIALS,
+            QUALIFICATIONS,
+            UNIVERSITIES,
+            UNIVERSITY_CODES,
+            USERS,
+            VERIFICATIONS,
+            _days,
+        )
+
+        db.create_all()
+
+        if reset:
+            # Audit rows are append-only by design, so the guard has to be
+            # bypassed explicitly here. This is a development command; the
+            # application itself has no path that can do this.
+            from sqlalchemy import event
+
+            from app.utils.audit_guard import _block_delete, _block_update
+
+            for target, hook in (
+                ("before_delete", _block_delete),
+                ("before_update", _block_update),
+            ):
+                if event.contains(AuditLog, target, hook):
+                    event.remove(AuditLog, target, hook)
+            Verification.query.delete()
+            Qualification.query.delete()
+            AuditLog.query.delete()
+            db.session.commit()
+            click.echo("Existing qualifications, verifications and audit entries removed.")
+
+        # -- institutions --------------------------------------------------
+        institutions: dict[str, Institution] = {}
+        for spec in UNIVERSITIES:
+            record = InstitutionRepository.get_by_code(spec["code"])
+            if record is None:
+                record = Institution(**spec)
+                db.session.add(record)
+            else:
+                record.name = spec["name"]
+                record.country = spec["country"]
+                record.contact_email = spec["contact_email"]
+                record.is_active = True
+            institutions[spec["code"]] = record
+        db.session.flush()
+
+        # Anything that is not one of the three universities is deactivated
+        # rather than deleted: credentials it already issued stay verifiable.
+        deactivated = []
+        for other in InstitutionRepository.list_all(page=1, per_page=100).items:
+            if other.code not in UNIVERSITY_CODES and other.is_active:
+                other.is_active = False
+                deactivated.append(other.code)
+
+        # -- users ---------------------------------------------------------
+        users: dict[str, User] = {}
+        created: list[tuple[str, str]] = []
+        for username, full_name, role, code, env_var in USERS:
+            password = os.environ.get(env_var) or generate_password()
+            user, was_created = _ensure_user(
+                username=username,
+                email=f"{username.replace('.', '-')}@qvs.example.com",
+                full_name=full_name,
+                role=role,
+                password=password,
+                institution_id=institutions[code].id if code else None,
+            )
+            users[username] = user
+            if was_created:
+                created.append((username, password))
+        db.session.flush()
+
+        issuer_for = {
+            "MSU": users["registry.msu"],
+            "UZ": users["registry.uz"],
+            "NUST": users["registry.nust"],
+        }
+
+        # -- qualifications ------------------------------------------------
+        added = 0
+        rows = list(QUALIFICATIONS)
+        for cid, title, qtype, code, award_ago in BUSY_HOLDER_CREDENTIALS:
+            rows.append(
+                (
+                    cid,
+                    title,
+                    qtype,
+                    BUSY_HOLDER,
+                    "tapiwa.chidziva@example.com",
+                    code,
+                    award_ago,
+                    None,
+                    QualificationStatus.ACTIVE,
+                    None,
+                )
+            )
+
+        for cid, title, qtype, holder, email, code, award_ago, expiry_ago, status, reason in rows:
+            if QualificationRepository.exists_credential_id(cid):
+                continue
+            db.session.add(
+                Qualification(
+                    credential_id=cid,
+                    title=title,
+                    qualification_type=qtype,
+                    holder_name=holder,
+                    holder_email=email,
+                    institution_id=institutions[code].id,
+                    award_date=_days(award_ago),
+                    expiry_date=_days(expiry_ago) if expiry_ago is not None else None,
+                    status=status,
+                    revocation_reason=reason,
+                    issued_by_id=issuer_for[code].id,
+                )
+            )
+            added += 1
+        db.session.commit()
+
+        # -- verification history -----------------------------------------
+        checks = 0
+        if Verification.query.count() == 0:
+            for cid, username, _days_ago in VERIFICATIONS:
+                VerificationService.verify(credential_id=cid, actor=users[username])
+                checks += 1
+
+        # -- summary --------------------------------------------------------
+        click.echo("\nTest data loaded.")
+        click.echo(f"  Universities        : {len(institutions)}")
+        if deactivated:
+            click.echo(f"  Deactivated (not a university): {', '.join(deactivated)}")
+        click.echo(f"  Qualifications added: {added}")
+        click.echo(f"  Total in register   : {QualificationRepository.count_all()}")
+        click.echo(f"  Verifications run   : {checks}")
+
+        if created:
+            click.echo("\n  Sign-in details (shown once - record them now):")
+            width = max(len(u) for u, _ in created)
+            for username, password in created:
+                click.echo(f"    {username.ljust(width)}  {password}")
+        else:
+            click.echo("\n  All accounts already existed; passwords unchanged.")
