@@ -45,8 +45,8 @@ qualification-verification-system/
 │   └── static/              app.css, app.js
 ├── tests/
 │   ├── conftest.py          fixtures
-│   ├── unit/                155 tests
-│   └── integration/         100 tests
+│   ├── unit/                177 tests
+│   └── integration/         87 tests
 ├── docs/                    this documentation set
 ├── reports/                 academic deliverables and generated coverage
 ├── migrations/              Alembic (Flask-Migrate)

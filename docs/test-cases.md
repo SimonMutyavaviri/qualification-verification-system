@@ -3,8 +3,8 @@
 Formal test cases for the Qualification Verification System.
 
 - **Automated cases (AT-*)** are executed by `pytest` on every CI run. "Actual
-  result" records the outcome of the run of 7 September 2026: **255 passed,
-  92.55% coverage**.
+  result" records the outcome of the run of 7 September 2026: **264 passed,
+  92.69% coverage**.
 - **Manual cases (MT-*)** cover properties automation cannot check — usability,
   layout, accessibility and the database-outage path.
 - **Security cases (ST-*)** carry the `security` marker.

@@ -157,8 +157,8 @@ is never "pick a side".*
 | Job | Gate |
 | --- | --- |
 | `quality` | Ruff · Black · Bandit |
-| `unit-tests` | 159 tests |
-| `integration-tests` | 105 tests, **on PostgreSQL 16** |
+| `unit-tests` | 177 tests |
+| `integration-tests` | 87 tests, **on PostgreSQL 16** |
 | `coverage` | **85% minimum** |
 | `docker-build` | Build **and run** the container |
 | `quality-gate` | The single required check |
@@ -173,9 +173,9 @@ builds but won't start is not a passing build.*
 
 # 264 tests · 92.69% coverage
 
-- **Unit (159)** — validation, the decision table, business rules, audit
+- **Unit (177)** — validation, the decision table, business rules, audit
   immutability
-- **Integration (105)** — full workflows, access control, security properties
+- **Integration (87)** — full workflows, access control, security properties
 - Negative cases carry equal weight
 - Coverage is a **gate**, not a target
 

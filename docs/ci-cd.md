@@ -98,7 +98,7 @@ The assignment asks how requirements are automatically verified. Concretely:
 
 | Mechanism | Where | Effect |
 | --- | --- | --- |
-| Test cases | `tests/` — 255 tests | Each "Must" requirement has at least one test (`docs/requirements-traceability.md`) |
+| Test cases | `tests/` — 264 tests | Each "Must" requirement has at least one test (`docs/requirements-traceability.md`) |
 | Validation rules | `app/utils/validators.py`, re-applied in services | Invalid data cannot be written, even bypassing the form |
 | Database constraints | Unique, check, foreign key constraints | The final backstop below the application |
 | Coverage gate | `--cov-fail-under=85` | Untested new code fails the build |
@@ -197,7 +197,7 @@ curl -fsS http://localhost:8080/healthz
 | Version control | Git, protected branches, PR-based flow |
 | Automated build | Docker multi-stage build in CI |
 | Continuous integration | Every push and PR runs the full gate |
-| Automated testing | 255 tests across unit and integration |
+| Automated testing | 264 tests across unit and integration |
 | Test against production-like infrastructure | Integration suite on PostgreSQL 16 |
 | Static analysis | Ruff, Black, Bandit |
 | Quality gates | Blocking checks, single required status check |

@@ -14,16 +14,16 @@ by-product of testing behaviour that matters.
 ## 2. The test pyramid as applied here
 
 ```
-        /\        Integration (100 tests)
+        /\        Integration (87 tests)
        /  \       Full HTTP request -> response through the real stack.
       /----\      Workflows, access control, security properties.
      /      \
-    /        \    Unit (155 tests)
+    /        \    Unit (177 tests)
    /          \   Validation rules, the verification decision table, service
   /____________\  business rules, audit immutability, the review assistant.
 ```
 
-**255 tests, 92.55% line coverage** at the time of writing.
+**264 tests, 92.69% line coverage** at the time of writing.
 
 More unit tests than integration tests, because the business rules are where
 the risk is: the verification decision table has more meaningful cases than the
@@ -141,7 +141,7 @@ addopts = [
 ```
 
 `--cov-fail-under=85` is the gate: below it, `pytest` exits non-zero and the CI
-job fails. Current coverage is **92.55%**.
+job fails. Current coverage is **92.69%**.
 
 `app/cli.py` is omitted from coverage. It is exercised by running `flask
 seed-demo` (which CI and the demonstration both do) rather than by unit tests,

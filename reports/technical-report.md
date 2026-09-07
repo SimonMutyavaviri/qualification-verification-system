@@ -538,7 +538,7 @@ report a healthy service that cannot verify a single credential.
 
 ### 8.1 Shape and scale
 
-**264 tests, 92.69% line coverage** — 159 unit and 105 integration.
+**264 tests, 92.69% line coverage** — 177 unit and 87 integration.
 
 More unit than integration tests, because the business rules are where the risk
 lies. The verification decision table has more meaningful cases than the route

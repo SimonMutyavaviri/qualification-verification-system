@@ -15,8 +15,8 @@ Built for the **MIM736 Practical Assignment**.
 
 | | |
 | --- | --- |
-| Tests | **255 passing** |
-| Coverage | **92.55%** (gate: 85%) |
+| Tests | **264 passing** |
+| Coverage | **92.69%** (gate: 85%) |
 | Lint (Ruff) | Clean |
 | Format (Black) | Clean |
 | Security (Bandit) | 0 findings |
@@ -296,8 +296,8 @@ Complete guide, including the switch to managed PostgreSQL:
 │   ├── templates/       Jinja2
 │   └── static/          CSS and JavaScript
 ├── tests/
-│   ├── unit/            155 tests
-│   └── integration/     100 tests
+│   ├── unit/            177 tests
+│   └── integration/     87 tests
 ├── docs/                documentation set
 ├── reports/             academic deliverables, coverage output
 ├── migrations/          Alembic

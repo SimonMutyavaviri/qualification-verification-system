@@ -131,7 +131,7 @@ automated test, the CI check that runs that test, and its status.
 | NFR-SEC-06 | Secrets from the environment | `app/config.py` guards | `TestProductionConfigurationGuards` (5 tests) | integration-tests | ✅ |
 | NFR-SEC-07 | No stack traces in production | `app/errors.py` | `::test_error_pages_do_not_leak_stack_traces` | integration-tests | ✅ |
 | NFR-SEC-08 | No open redirect | `_safe_next` | `TestOpenRedirectProtection` (2 tests) | integration-tests | ✅ |
-| NFR-QUA-01 | Coverage ≥ 85% | `--cov-fail-under=85` | Current: 92.55% | coverage | ✅ |
+| NFR-QUA-01 | Coverage ≥ 85% | `--cov-fail-under=85` | Current: 92.69% | coverage | ✅ |
 | NFR-QUA-02 | Consistent style | Black + Ruff | `black --check`, `ruff check` | quality | ✅ |
 | NFR-QUA-03 | No medium/high security findings | Bandit `-ll` | Current: 0 findings | quality | ✅ |
 | NFR-USE-01 | Responsive interface | Tailwind responsive classes | Manual — `docs/test-cases.md` MT-01 | — | ⚠️ |

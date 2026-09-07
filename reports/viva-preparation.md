@@ -200,7 +200,7 @@ automatically, rather than depending on the author choosing correctly.
 
 **25. How many tests, and what do they cover?**
 
-264 tests at 92.69% line coverage — 159 unit, 105 integration. Unit tests cover
+264 tests at 92.69% line coverage — 177 unit, 87 integration. Unit tests cover
 validation rules, the verification decision table, service business rules, audit
 immutability and the review assistant. Integration tests cover full HTTP
 workflows, access control and security properties.
