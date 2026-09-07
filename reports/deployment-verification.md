@@ -131,6 +131,19 @@ HTTPS request; HSTS is not sent over plain HTTP.
 This is exactly the class of defect that only a real deployment reveals — it
 passed every test and every local check beforehand.
 
+### A second, welcome consequence of the same fix
+
+After the fix, the scripted post-deployment check began receiving **400 Bad
+Request** on sign-in. This was not a regression: Flask-WTF applies a strict
+`Referer` check to CSRF-protected POSTs **only when the request is secure**.
+Before `ProxyFix`, the application never considered any request secure, so that
+check had never been active in production.
+
+In other words, the same defect that suppressed HSTS was also silently
+disabling a CSRF control. The scripted check was sending no `Referer` header;
+a real browser always does. Adding the header made all checks pass (§5), and
+the stricter behaviour is correct and has been kept.
+
 ---
 
 ## 5. Functional verification against the live system

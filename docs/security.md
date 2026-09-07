@@ -24,7 +24,7 @@ section 7 as gaps rather than being quietly omitted.
 | 12 | Input validation | `app/utils/validators.py`, applied at the form **and** the service | `test_validators.py` (40 tests) |
 | 13 | Security response headers | `apply_security_headers` as an `after_request` hook | `TestSecurityHeaders` |
 | 14 | Content Security Policy | `default-src 'self'`, `frame-ancestors 'none'`, `form-action 'self'` | `TestSecurityHeaders::test_content_security_policy_is_set` |
-| 15 | HSTS | Set on HTTPS responses (`max-age=31536000; includeSubDomains`) | Manual — requires a TLS request |
+| 15 | HSTS | Set on HTTPS responses (`max-age=31536000; includeSubDomains`) | `TestProxyAwareness::test_hsts_is_sent_for_an_https_request`; confirmed live |
 | 16 | Rate limiting | Flask-Limiter: 10/min on sign-in, 30/min on verification | Configured in `app/config.py`; disabled in tests |
 | 17 | Open redirect protection | `_safe_next` rejects absolute URLs and non-`/` paths | `TestOpenRedirectProtection` |
 | 18 | No stack traces to clients | Central handlers in `app/errors.py`; traces go to the log | `TestInformationDisclosure::test_error_pages_do_not_leak_stack_traces` |
@@ -40,6 +40,8 @@ section 7 as gaps rather than being quietly omitted.
 | 28 | Automated dependency security scanning | Bandit at `-ll` in CI, failing the build | `.github/workflows/ci.yml` |
 | 29 | Self-lockout prevention | An admin cannot demote or deactivate themselves | `TestUserAdministration` |
 | 30 | Unpredictable receipt URLs | Verification receipts keyed by UUID4, not a sequential id | `app/models/verification.py` |
+| 31 | Proxy-aware request scheme | `ProxyFix`, gated on `TRUST_PROXY_HEADERS` (off by default, on in production) | `TestProxyAwareness` (4 tests) |
+| 32 | Strict CSRF Referer checking | Flask-WTF, active over HTTPS once the scheme is correct (see 5.1) | Verified live -- `reports/deployment-verification.md` |
 
 ## 2. Authentication and session design
 
@@ -115,6 +117,18 @@ The mitigation is that Jinja2 autoescapes all template output by default and
 the application renders no user-supplied HTML anywhere. Removing this compromise
 means compiling Tailwind at build time and dropping `'unsafe-inline'` — this is
 recorded as a task in the collaboration plan.
+
+### 5.1 A control that was silently inactive in production
+
+Flask-WTF applies a strict `Referer` check to CSRF-protected POSTs **only when
+the request is secure**. Because TLS terminates at Fly's edge, the application
+considered every request to be plain HTTP, so this check had never been active
+in the deployed system. Applying `ProxyFix` (control 31) turned it on — the same
+defect that suppressed HSTS was also disabling a CSRF control.
+
+The lesson generalises: a control whose behaviour depends on the request scheme
+cannot be assumed to work in production merely because its unit test passes
+locally. See `reports/deployment-verification.md` §4 for how this was found.
 
 ## 6. Verification and privacy
 
