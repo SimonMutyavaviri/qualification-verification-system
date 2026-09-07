@@ -209,6 +209,19 @@ curl -fsS http://localhost:8080/healthz
 | Secret management | Environment variables, GitHub secrets, Fly secrets, start-up guards |
 | Rollback | Documented, with the command surfaced automatically on failure |
 
+## 8.1 Pipeline verification
+
+Both workflows have run against the real repository and application:
+
+- **CI** - six jobs green on `main` and `develop` (264 tests, 92.69% coverage,
+  Docker image built and smoke-tested on the runner).
+- **CD** - failed correctly when `FLY_API_TOKEN` was absent, then deployed
+  releases v3 and v4. Release v4 was fully automatic: push to `main` triggered
+  CI, the quality gate passed, and CD deployed and health-checked with no human
+  step.
+
+Evidence: `reports/deployment-verification.md` section 8.
+
 ## 9. Known limitations
 
 - **No staging environment.** `develop` is integrated and tested but not

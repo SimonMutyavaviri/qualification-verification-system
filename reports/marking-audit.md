@@ -89,7 +89,7 @@ did not actually consult**.
 | --- | --- | --- |
 | System functionality | Yes | Script covers all four verification results |
 | Git workflow | **Depends on the collaboration phase** | The script assumes PRs and reviews exist |
-| CI/CD pipeline | **Partly** | Needs a real pipeline run, including a failed one |
+| CI/CD pipeline | **Mostly** | CI and CD both verified green; still need a *failed* run to screenshot |
 | Automated testing | Yes | |
 | Verification process | Yes | |
 
@@ -210,12 +210,18 @@ Ordered by marks at stake:
 
 ## Required fixes, in priority order
 
+**Already done**
+
+- ~~Push to GitHub~~ - https://github.com/SimonMutyavaviri/qualification-verification-system
+- ~~Configure branch protection~~ - enabled on `main` and `develop`
+- ~~Fix `.github/CODEOWNERS`~~ - now valid; reassign each section as teammates get write access
+- ~~Add `FLY_API_TOKEN`~~ - set; CD verified end to end (releases v3 and v4)
+
 **Before anything else**
 
-1. Push to GitHub; configure branch protection per `docs/git-workflow.md` §6
-2. Replace the placeholder handles in `.github/CODEOWNERS`
-3. Add `FLY_API_TOKEN` to Actions secrets so CD can run
-4. Raise the issues for all four task sets
+1. Add the three teammates as collaborators with write access
+2. Reassign the `CODEOWNERS` sections to their real handles
+3. Raise the issues for all four task sets
 
 **The collaboration phase — the largest block of marks**
 

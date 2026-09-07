@@ -224,7 +224,29 @@ test case **MT-11** in `docs/test-cases.md`, and screenshots go in section G of
 
 ---
 
-## 8. What is *not* claimed
+## 8. Continuous Delivery verified
+
+`.github/workflows/cd.yml` has now run end to end against this application.
+
+| Run | Trigger | Result |
+| --- | --- | --- |
+| `34086154403` | `workflow_run` after CI | **Failed** - `FLY_API_TOKEN` not yet set. Correct behaviour: the deployment could not authenticate and the pipeline stopped. |
+| `34086342917` | `workflow_dispatch` | **Succeeded** - released v3, health check passed on the first attempt, sign-in page smoke-tested. |
+| `34086822356` | `workflow_run` after CI on `main` | **Succeeded** - released v4 fully automatically. |
+
+The third run is the important one: a commit was pushed to `main`, CI ran its
+six jobs, the quality gate passed, and CD deployed and health-checked the result
+without any human step.
+
+Deployment log evidence:
+
+```
+Deployment healthy after 1 attempt(s):
+{"checks":{"application":"ok","database":"ok"},"status":"healthy","version":"1.0.0"}
+Live sign-in page served correctly.
+```
+
+## 9. What is *not* claimed
 
 Stated explicitly so nothing here is overstated:
 
@@ -237,9 +259,4 @@ Stated explicitly so nothing here is overstated:
   and CI runs the integration suite against PostgreSQL 16, but the live instance
   uses SQLite on a volume. The rationale and the one-command switch are in
   `docs/flyio-deployment.md` §5 and §11.
-- **The CD pipeline has not yet run against this app.** `.github/workflows/cd.yml`
-  is written and gated on CI success, but it needs `FLY_API_TOKEN` in the
-  repository's Actions secrets and a push to `main`. Both deployments so far were
-  performed manually with `flyctl deploy`. Setting up the token is step 12 of
-  `docs/flyio-deployment.md`.
 - **Load and performance were not measured.** No load testing was carried out.
