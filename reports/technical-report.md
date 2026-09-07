@@ -11,7 +11,7 @@
 | `[INSERT NAME]` | `[INSERT NUMBER]` | Verification and audit |
 | `[INSERT NAME]` | `[INSERT NUMBER]` | DevOps, QA, Docker and deployment |
 
-**Repository:** `[INSERT REPOSITORY URL]`
+**Repository:** https://github.com/SimonMutyavaviri/qualification-verification-system
 **Live system:** https://qvs-mim736.fly.dev
 **Date:** `[INSERT SUBMISSION DATE]`
 

@@ -66,7 +66,7 @@ qualification-verification-system/
 **Requires Python 3.11+.** The project is developed on 3.14 and deployed on 3.12.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/SimonMutyavaviri/qualification-verification-system.git
 cd qualification-verification-system
 
 python -m venv .venv

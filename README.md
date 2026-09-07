@@ -99,7 +99,7 @@ Full detail and the reasoning behind the trade-offs: [`docs/architecture.md`](do
 ## Quick start
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/SimonMutyavaviri/qualification-verification-system.git
 cd qualification-verification-system
 
 python -m venv .venv
