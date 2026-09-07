@@ -1,31 +1,53 @@
-# Every pull request needs a review. Ownership is split along the same lines
-# as the team's areas of responsibility, so the person who knows an area is
-# automatically asked to review changes to it.
+# Code owners.
 #
-# Replace the placeholder handles with the team's real GitHub usernames.
+# Every pull request needs a review, and branch protection requires it to come
+# from the owner of the area being changed. Ownership follows the four areas of
+# responsibility in docs/collaboration-plan.md, so the person who knows an area
+# is requested automatically.
+#
+# ---------------------------------------------------------------------------
+# ACTION REQUIRED WHEN THE TEAM JOINS THE REPOSITORY
+#
+# Every path below currently points at @SimonMutyavaviri, because the other
+# three members do not yet have write access. An entry naming a user who cannot
+# access the repository is ignored by GitHub, which would silently leave those
+# paths unowned.
+#
+# As each teammate is added (Settings -> Collaborators -> Add people, with
+# Write access), replace the owner on their section with their real handle:
+#
+#   Student 1 -> authentication and user management
+#   Student 2 -> qualification management
+#   Student 3 -> verification and audit
+#   Student 4 -> DevOps, QA and deployment
+#
+# Check your edit with:
+#   gh api repos/SimonMutyavaviri/qualification-verification-system/codeowners/errors
+# ---------------------------------------------------------------------------
 
 # Default owner for anything not matched below.
-*                       @team-lead
+*                                        @SimonMutyavaviri
 
 # Student 1 - authentication, user management and backend hardening
-/app/auth/              @student-one
-/app/services/user_service.py  @student-one
-/app/utils/security.py  @student-one
+/app/auth/                               @SimonMutyavaviri
+/app/services/user_service.py            @SimonMutyavaviri
+/app/routes/auth_routes.py               @SimonMutyavaviri
+/app/utils/security.py                   @SimonMutyavaviri
 
 # Student 2 - qualification management
-/app/services/qualification_service.py   @student-two
-/app/routes/qualification_routes.py      @student-two
-/app/templates/qualifications/           @student-two
+/app/services/qualification_service.py   @SimonMutyavaviri
+/app/routes/qualification_routes.py      @SimonMutyavaviri
+/app/templates/qualifications/           @SimonMutyavaviri
 
 # Student 3 - verification and audit
-/app/services/verification_service.py    @student-three
-/app/services/audit_service.py           @student-three
-/app/routes/verification_routes.py       @student-three
-/app/templates/verification/             @student-three
+/app/services/verification_service.py    @SimonMutyavaviri
+/app/services/audit_service.py           @SimonMutyavaviri
+/app/routes/verification_routes.py       @SimonMutyavaviri
+/app/templates/verification/             @SimonMutyavaviri
 
-# Student 4 - DevOps, QA and deployment
-/.github/               @student-four
-/Dockerfile             @student-four
-/docker-compose.yml     @student-four
-/fly.toml               @student-four
-/pyproject.toml         @student-four
+# Student 4 - DevOps, QA, Docker and deployment
+/.github/                                @SimonMutyavaviri
+/Dockerfile                              @SimonMutyavaviri
+/docker-compose.yml                      @SimonMutyavaviri
+/fly.toml                                @SimonMutyavaviri
+/pyproject.toml                          @SimonMutyavaviri
