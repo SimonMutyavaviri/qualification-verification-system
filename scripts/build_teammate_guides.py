@@ -253,15 +253,15 @@ TEAMMATES = [
         "branch": "feature/audit-export-and-date-filter",
     },
     {
-        "handle": "[HER GITHUB USERNAME]",
-        "display": "third teammate",
-        "filename": "GUIDE-third-teammate.docx",
+        "handle": "Learnmore1988",
+        "display": "Learnmore1988",
+        "filename": "GUIDE-Learnmore1988.docx",
         "student": 1,
         "area": "Login and User Management",
         "plain_area": "the part of the system that handles signing in and managing accounts",
         "reviews": "Progress861",
         "reviewed_by": "AnesuCK",
-        "needs_account": True,
+        "needs_account": False,
         "task_title": "Lock an account after repeated failed sign-in attempts",
         "task_plain": (
             "At the moment, if somebody keeps guessing passwords they are slowed "

@@ -51,3 +51,6 @@ deployment-credentials.local.md
 
 # Locally generated credentials, never committed
 .local/
+
+# Office lock files created while a document is open
+~$*
