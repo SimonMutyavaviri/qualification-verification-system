@@ -8,11 +8,11 @@
 
 | | |
 | --- | --- |
-| **Full name** | `[INSERT YOUR FULL NAME]` |
-| **Student number** | `[INSERT YOUR STUDENT NUMBER]` |
+| **Full name** | PROGRESS MAMUTSE |
+| **Student number** | R252925Z |
 | **Course** | MIM736 |
 | **Assignment** | Practical Assignment - Qualification Verification System |
-| **GitHub username** | `[INSERT YOUR GITHUB USERNAME]` |
+| **GitHub username** | Progress861 |
 | **Repository** | `[INSERT REPOSITORY URL]` |
 | **Submission date** | `[INSERT DATE]` |
 
